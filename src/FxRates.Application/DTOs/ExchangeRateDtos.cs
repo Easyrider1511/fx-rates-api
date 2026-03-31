@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace FxRates.Application.DTOs;
 
 /// <summary>
@@ -16,8 +18,8 @@ public record ExchangeRateResponse(
 /// What the client sends to create an exchange rate
 /// </summary>
 public record CreateExchangeRateRequest(
-    string FromCurrency,
-    string ToCurrency,
+    [Required] string FromCurrency,
+    [Required] string ToCurrency,
     decimal BidPrice,
     decimal AskPrice
 );

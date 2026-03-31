@@ -253,5 +253,6 @@ The unit tests cover the core scenarios of `ExchangeRateService`:
 | No formal input validation | Integrate FluentValidation |
 | Rates can become stale over time | Add a `BackgroundService` to periodically refresh stored pairs |
 | No rate history | Add an audit table to track price changes over time |
+| Concurrent requests for the same new pair may cause a unique constraint violation | Add optimistic concurrency handling or catch `DbUpdateException` on duplicate insert |
 | MassTransit uses in-memory transport | Replace `UsingInMemory` with `UsingRabbitMq` in `MessagingExtensions` for production |
 | Unit tests cover the service layer only | Add controller-level tests with `WebApplicationFactory` |
