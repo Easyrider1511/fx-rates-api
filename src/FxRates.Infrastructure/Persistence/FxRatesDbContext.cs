@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FxRates.Infrastructure.Persistence;
 
+/// <summary>EF Core database context for the FxRates application.</summary>
 public class FxRatesDbContext : DbContext
 {
     public FxRatesDbContext(DbContextOptions<FxRatesDbContext> options) : base(options) { }

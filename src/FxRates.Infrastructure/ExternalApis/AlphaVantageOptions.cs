@@ -5,13 +5,14 @@ using Microsoft.Extensions.Options;
 
 namespace FxRates.Infrastructure.ExternalApis;
 
-// Configuration class — credentials come from appsettings.json
+/// <summary>Configuration options for the AlphaVantage API client. Bound from appsettings.json.</summary>
 public class AlphaVantageOptions
 {
     public string ApiKey { get; set; } = string.Empty;
     public string BaseUrl { get; set; } = "https://www.alphavantage.co";
 }
 
+/// <summary>Fetches real-time exchange rates from the AlphaVantage CURRENCY_EXCHANGE_RATE endpoint.</summary>
 public class AlphaVantageClient : IForexApiClient
 {
     private readonly HttpClient _httpClient;
@@ -56,8 +57,15 @@ public class AlphaVantageClient : IForexApiClient
                 return null;
             }
 
-            var bidStr = rateElement.GetProperty("8. Bid Price").GetString() ?? "0";
-            var askStr = rateElement.GetProperty("9. Ask Price").GetString() ?? "0";
+            if (!rateElement.TryGetProperty("8. Bid Price", out var bidElement) ||
+                !rateElement.TryGetProperty("9. Ask Price", out var askElement))
+            {
+                _logger.LogWarning("AlphaVantage response is missing Bid/Ask fields for {From}/{To}", fromCurrency, toCurrency);
+                return null;
+            }
+
+            var bidStr = bidElement.GetString() ?? "0";
+            var askStr = askElement.GetString() ?? "0";
 
             return new ForexRateDto(
                 FromCurrency: fromCurrency.ToUpperInvariant(),
@@ -70,6 +78,11 @@ public class AlphaVantageClient : IForexApiClient
         {
             _logger.LogError(ex, "HTTP error while querying AlphaVantage for {From}/{To}", fromCurrency, toCurrency);
             throw;
+        }
+        catch (Exception ex) when (ex is JsonException or FormatException or InvalidOperationException)
+        {
+            _logger.LogError(ex, "Failed to parse AlphaVantage response for {From}/{To}", fromCurrency, toCurrency);
+            return null;
         }
     }
 }

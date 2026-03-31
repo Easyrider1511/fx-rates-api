@@ -84,7 +84,7 @@ public class ExchangeRatesController : ControllerBase
         return NoContent();  // 204 = success with no response body
     }
 
-    // Private method to convert the entity into the response DTO
+    /// <summary>Maps a domain entity to the API response DTO.</summary>
     private static ExchangeRateResponse MapToResponse(
         FxRates.Domain.Entities.ExchangeRate r)
         => new(r.Id, r.FromCurrency, r.ToCurrency, r.BidPrice, r.AskPrice, r.LastUpdated);

@@ -1,23 +1,28 @@
 using FxRates.Application.ExternalApis;
+using FxRates.Application.Messaging;
 using FxRates.Domain.Entities;
 using FxRates.Domain.Repositories;
 using Microsoft.Extensions.Logging;
 
 namespace FxRates.Application.Services;
 
+/// <summary>Implements the exchange rate use cases defined by <see cref="IExchangeRateService"/>.</summary>
 public class ExchangeRateService : IExchangeRateService
 {
     private readonly IExchangeRateRepository _repository;
     private readonly IForexApiClient _forexApiClient;
+    private readonly IEventPublisher _eventPublisher;
     private readonly ILogger<ExchangeRateService> _logger;
-    
+
     public ExchangeRateService(
         IExchangeRateRepository repository,
         IForexApiClient forexApiClient,
+        IEventPublisher eventPublisher,
         ILogger<ExchangeRateService> logger)
     {
         _repository     = repository;
         _forexApiClient = forexApiClient;
+        _eventPublisher = eventPublisher;
         _logger         = logger;
     }
 
@@ -48,6 +53,7 @@ public class ExchangeRateService : IExchangeRateService
 
         var rate = ExchangeRate.Create(dto.FromCurrency, dto.ToCurrency, dto.BidPrice, dto.AskPrice);
         await _repository.AddAsync(rate, ct);
+        await _eventPublisher.PublishAsync(new RateAddedEvent(rate.Id, rate.FromCurrency, rate.ToCurrency, rate.BidPrice, rate.AskPrice, rate.LastUpdated), ct);
 
         _logger.LogInformation("Rate {From}/{To} saved with ID {Id}.", from, to, rate.Id);
         return rate;
@@ -62,6 +68,7 @@ public class ExchangeRateService : IExchangeRateService
 
         var rate = ExchangeRate.Create(from, to, bid, ask);
         await _repository.AddAsync(rate, ct);
+        await _eventPublisher.PublishAsync(new RateAddedEvent(rate.Id, rate.FromCurrency, rate.ToCurrency, rate.BidPrice, rate.AskPrice, rate.LastUpdated), ct);
         return rate;
     }
 

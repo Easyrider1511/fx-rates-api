@@ -1,5 +1,6 @@
 using FluentAssertions;
 using FxRates.Application.ExternalApis;
+using FxRates.Application.Messaging;
 using FxRates.Application.Services;
 using FxRates.Domain.Entities;
 using FxRates.Domain.Repositories;
@@ -15,8 +16,9 @@ namespace FxRates.Tests.Services;
 /// </summary>
 public class ExchangeRateServiceTests
 {
-    private readonly Mock<IExchangeRateRepository> _repoMock = new();
-    private readonly Mock<IForexApiClient>          _apiMock  = new();
+    private readonly Mock<IExchangeRateRepository> _repoMock      = new();
+    private readonly Mock<IForexApiClient>          _apiMock       = new();
+    private readonly Mock<IEventPublisher>          _publisherMock = new();
 
     // SUT
     private readonly ExchangeRateService _sut;
@@ -26,8 +28,31 @@ public class ExchangeRateServiceTests
         _sut = new ExchangeRateService(
             _repoMock.Object,
             _apiMock.Object,
+            _publisherMock.Object,
             NullLogger<ExchangeRateService>.Instance  // Logger that does nothing
         );
+    }
+
+    // ─── Unit tests: GetAllAsync ──────────────────────────────────────────────────
+
+    [Fact]
+    public async Task GetAllAsync_ShouldReturnAllRatesFromRepository()
+    {
+        // Arrange
+        var rates = new List<ExchangeRate>
+        {
+            ExchangeRate.Create("USD", "EUR", 0.91m, 0.92m),
+            ExchangeRate.Create("USD", "GBP", 0.78m, 0.79m)
+        };
+        _repoMock
+            .Setup(r => r.GetAllAsync(default))
+            .ReturnsAsync(rates);
+
+        // Act
+        var result = await _sut.GetAllAsync();
+
+        // Assert
+        result.Should().BeEquivalentTo(rates);
     }
 
     // ─── Unit tests: GetOrFetchByPairAsync ────────────────────────────────────────
@@ -72,9 +97,12 @@ public class ExchangeRateServiceTests
         exchangeRateResult.AskPrice.Should().Be(0.79m);
         exchangeRateResult.FromCurrency.Should().Be("USD");
 
-        // Verify that it was saved in the database
+        // Verify that it was saved in the database and the event was published
         _repoMock.Verify(
             r => r.AddAsync(It.IsAny<ExchangeRate>(), default),
+            Times.Once);
+        _publisherMock.Verify(
+            p => p.PublishAsync(It.IsAny<RateAddedEvent>(), default),
             Times.Once);
     }
 
@@ -132,6 +160,9 @@ public class ExchangeRateServiceTests
         exchangeRateResult.FromCurrency.Should().Be("BTC");
         exchangeRateResult.BidPrice.Should().Be(42000m);
         _repoMock.Verify(r => r.AddAsync(It.IsAny<ExchangeRate>(), default), Times.Once);
+        _publisherMock.Verify(
+            p => p.PublishAsync(It.IsAny<RateAddedEvent>(), default),
+            Times.Once);
     }
 
     // ─── Unit tests: UpdateAsync ──────────────────────────────────────────────────

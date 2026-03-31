@@ -23,6 +23,7 @@ Manages foreign exchange rates (Forex) with full CRUD operations, and automatica
 - ✅ Automatic fetch from AlphaVantage when a rate is not found locally
 - ✅ Persistent local cache — once fetched, rates are stored and reused
 - ✅ SQLite database via Entity Framework Core
+- ✅ Event publishing via MassTransit — a `RateAddedEvent` is raised every time a new rate is persisted
 - ✅ Global error handling with RFC 7807 ProblemDetails responses
 - ✅ Interactive API documentation via Swagger / OpenAPI
 - ✅ Unit tests with xUnit, Moq and FluentAssertions
@@ -49,6 +50,7 @@ HTTP Request
     → Repository          (checks the local database)
         → [if not found]  → AlphaVantage API
         → [store result]  → Database
+        → [publish event] → MassTransit (RateAddedEvent)
     → DTO                 (maps entity to response shape)
 HTTP Response
 ```
@@ -64,6 +66,7 @@ The Service is the only layer that decides whether to go to the external API. Th
 | ASP.NET Core | 10.0 | Web framework |
 | Entity Framework Core | 10.x | ORM / database access |
 | SQLite | — | Local database |
+| MassTransit | 8.x | In-memory message bus (event publishing) |
 | Swashbuckle | 10.x | Swagger / OpenAPI docs |
 | xUnit | 2.x | Unit test framework |
 | Moq | 4.x | Mocking in tests |
@@ -226,14 +229,16 @@ The unit tests cover the core scenarios of `ExchangeRateService`:
 
 | Scenario | Expected behaviour |
 |---|---|
+| Get all rates | Returns all rates from the database |
 | Rate exists in database | Returns immediately, never calls external API |
-| Rate not in database | Fetches from AlphaVantage, persists, and returns |
+| Rate not in database | Fetches from AlphaVantage, persists, publishes event, and returns |
 | External API returns null | Throws `KeyNotFoundException` → 404 |
 | Creating a duplicate pair | Throws `InvalidOperationException` → 409 |
-| Creating with valid data | Persists and returns the new rate |
+| Creating with valid data | Persists, publishes event, and returns the new rate |
 | Updating a non-existent ID | Throws `KeyNotFoundException` → 404 |
 | Updating with valid data | Updates Bid/Ask and `lastUpdated` |
 | Deleting a non-existent ID | Throws `KeyNotFoundException` → 404 |
+| Deleting with valid data | Removes the rate from the database |
 
 ---
 
@@ -248,4 +253,5 @@ The unit tests cover the core scenarios of `ExchangeRateService`:
 | No formal input validation | Integrate FluentValidation |
 | Rates can become stale over time | Add a `BackgroundService` to periodically refresh stored pairs |
 | No rate history | Add an audit table to track price changes over time |
+| MassTransit uses in-memory transport | Replace `UsingInMemory` with `UsingRabbitMq` in `MessagingExtensions` for production |
 | Unit tests cover the service layer only | Add controller-level tests with `WebApplicationFactory` |

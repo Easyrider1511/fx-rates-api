@@ -11,7 +11,7 @@ public class ExchangeRate
     public string ToCurrency { get; private set; } = string.Empty;
     public decimal BidPrice { get; private set; }
     public decimal AskPrice { get; private set; }
-    public DateTime LastUpdated { get; private set; } 
+    public DateTime LastUpdated { get; private set; }
     
     private ExchangeRate() { }
     

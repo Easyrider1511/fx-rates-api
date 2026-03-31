@@ -3,6 +3,7 @@ using FxRates.Application.ExternalApis;
 using FxRates.Application.Services;
 using FxRates.Domain.Repositories;
 using FxRates.Infrastructure.ExternalApis;
+using FxRates.Infrastructure.Messaging;
 using FxRates.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -29,6 +30,9 @@ builder.Services.Configure<AlphaVantageOptions>(
 
 // AddHttpClient manages the HTTP connection pool (avoids issues with multiple requests)
 builder.Services.AddHttpClient<IForexApiClient, AlphaVantageClient>();
+
+// ─── Messaging (MassTransit in-memory) ─────────────────────────────────────
+builder.Services.AddMessaging();
 
 // ─── Global error handling ──────────────────────────────────────────────────
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();

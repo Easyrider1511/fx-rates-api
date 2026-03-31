@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FxRates.Infrastructure.Persistence;
 
+/// <summary>SQLite-backed implementation of <see cref="IExchangeRateRepository"/> using EF Core.</summary>
 public class ExchangeRateRepository : IExchangeRateRepository
 {
     private readonly FxRatesDbContext _context;
@@ -40,11 +41,10 @@ public class ExchangeRateRepository : IExchangeRateRepository
 
     public async Task DeleteAsync(Guid id, CancellationToken ct = default)
     {
-        var rate = await GetByIdAsync(id, ct);
-        if (rate is not null)
-        {
-            _context.ExchangeRates.Remove(rate);
-            await _context.SaveChangesAsync(ct);
-        }
-    }    
+        var rate = await GetByIdAsync(id, ct)
+            ?? throw new KeyNotFoundException($"Rate with ID {id} not found.");
+
+        _context.ExchangeRates.Remove(rate);
+        await _context.SaveChangesAsync(ct);
+    }
 }
