@@ -182,4 +182,20 @@ public class ExchangeRateServiceTests
             .Should()
             .ThrowAsync<KeyNotFoundException>();
     }
+
+    [Fact]
+    public async Task DeleteAsync_WhenIdExists_ShouldCallRepositoryDelete()
+    {
+        // Arrange
+        var exchangeRate = ExchangeRate.Create("USD", "EUR", 0.91m, 0.92m);
+        _repoMock
+            .Setup(r => r.GetByIdAsync(exchangeRate.Id, default))
+            .ReturnsAsync(exchangeRate);
+
+        // Act
+        await _sut.DeleteAsync(exchangeRate.Id);
+
+        // Assert
+        _repoMock.Verify(r => r.DeleteAsync(exchangeRate.Id, default), Times.Once);
+    }
 }
