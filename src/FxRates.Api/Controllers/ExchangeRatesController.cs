@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace FxRates.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]  // URL base: /api/exchangerates
+[Route("api/[controller]")]
 [Produces("application/json")]
 public class ExchangeRatesController : ControllerBase
 {

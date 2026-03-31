@@ -1,7 +1,7 @@
 # FxRates API
 
-A RESTful API built with ASP.NET Core for managing foreign exchange rates (Forex).  
-Supports full CRUD operations on currency pairs, with automatic fallback to [AlphaVantage](https://www.alphavantage.co) when a rate is not available locally.
+A RESTful API built with ASP.NET Core following **Clean Architecture** principles.
+Manages foreign exchange rates (Forex) with full CRUD operations, and automatically fetches missing rates from [AlphaVantage](https://www.alphavantage.co) and persists them locally.
 
 ## Table of Contents
 
@@ -13,7 +13,7 @@ Supports full CRUD operations on currency pairs, with automatic fallback to [Alp
 - [Configuration](#configuration)
 - [API Endpoints](#api-endpoints)
 - [Running the Tests](#running-the-tests)
-- [Limitations & Possible Improvements](#limitations--possible-improvements)
+- [Known Trade-offs & Next Steps](#known-trade-offs--next-steps)
 
 ---
 
@@ -230,14 +230,16 @@ The unit tests cover the core scenarios of `ExchangeRateService`:
 | Rate not in database | Fetches from AlphaVantage, persists, and returns |
 | External API returns null | Throws `KeyNotFoundException` → 404 |
 | Creating a duplicate pair | Throws `InvalidOperationException` → 409 |
+| Creating with valid data | Persists and returns the new rate |
 | Updating a non-existent ID | Throws `KeyNotFoundException` → 404 |
+| Updating with valid data | Updates Bid/Ask and `lastUpdated` |
 | Deleting a non-existent ID | Throws `KeyNotFoundException` → 404 |
 
 ---
 
-## Limitations & Possible Improvements
+## Known Trade-offs & Next Steps
 
-| Limitation | Suggested improvement |
+| Trade-off | Next step |
 |---|---|
 | AlphaVantage free tier allows 25 requests/day | Add TTL-based caching with `IMemoryCache` or Redis |
 | No authentication | Add JWT Bearer token authentication |
@@ -246,3 +248,4 @@ The unit tests cover the core scenarios of `ExchangeRateService`:
 | No formal input validation | Integrate FluentValidation |
 | Rates can become stale over time | Add a `BackgroundService` to periodically refresh stored pairs |
 | No rate history | Add an audit table to track price changes over time |
+| Unit tests cover the service layer only | Add controller-level tests with `WebApplicationFactory` |

@@ -15,16 +15,14 @@ namespace FxRates.Tests.Services;
 /// </summary>
 public class ExchangeRateServiceTests
 {
-    // Mocks = fake versions of dependencies that we control in the tests
     private readonly Mock<IExchangeRateRepository> _repoMock = new();
     private readonly Mock<IForexApiClient>          _apiMock  = new();
 
-    // SUT = System Under Test = what we are testing
+    // SUT
     private readonly ExchangeRateService _sut;
 
     public ExchangeRateServiceTests()
     {
-        // Create the service with the fake dependencies.
         _sut = new ExchangeRateService(
             _repoMock.Object,
             _apiMock.Object,
@@ -37,18 +35,18 @@ public class ExchangeRateServiceTests
     [Fact]
     public async Task GetOrFetchByPairAsync_WhenRateExistsInDb_ShouldReturnWithoutCallingApi()
     {
-        // Arrange: set up the scenario
+        // Arrange
         var existingExchangeRate = ExchangeRate.Create("USD", "EUR", 0.91m, 0.92m);
         _repoMock
             .Setup(r => r.GetByCurrencyPairAsync("USD", "EUR", default))
             .ReturnsAsync(existingExchangeRate);
 
-        // Act: execute the method we are testing
+        // Act
         var exchangeRateResult = await _sut.GetOrFetchByPairAsync("USD", "EUR");
 
-        // Assert: verify the result
-        exchangeRateResult.Should().Be(existingExchangeRate);  // should be the same object
-        _apiMock.Verify(                        // the external API should NOT have been called
+        // Assert
+        exchangeRateResult.Should().Be(existingExchangeRate);
+        _apiMock.Verify(
             a => a.GetRateAsync(It.IsAny<string>(), It.IsAny<string>(), default),
             Times.Never);
     }
@@ -92,7 +90,7 @@ public class ExchangeRateServiceTests
             .Setup(a => a.GetRateAsync("XYZ", "ABC", default))
             .ReturnsAsync((ForexRateDto?)null);  // API not found
 
-        // Act & Assert: expect an exception to be thrown
+        // Act & Assert
         await _sut
             .Invoking(s => s.GetOrFetchByPairAsync("XYZ", "ABC"))
             .Should()

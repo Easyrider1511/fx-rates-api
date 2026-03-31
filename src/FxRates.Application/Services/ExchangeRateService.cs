@@ -11,7 +11,6 @@ public class ExchangeRateService : IExchangeRateService
     private readonly IForexApiClient _forexApiClient;
     private readonly ILogger<ExchangeRateService> _logger;
     
-    // Constructor dependency injection
     public ExchangeRateService(
         IExchangeRateRepository repository,
         IForexApiClient forexApiClient,
@@ -26,7 +25,7 @@ public class ExchangeRateService : IExchangeRateService
         => _repository.GetAllAsync(ct);
 
     /// <summary>
-    /// Core challenge logic:
+    /// Core business logic:
     /// 1. Checks whether the exchange rate already exists in the database
     /// 2. If it exists, returns it directly (local cache)
     /// 3. If it does not exist, fetches it from the external API and stores it in the database
