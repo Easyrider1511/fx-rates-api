@@ -35,6 +35,7 @@ public class ExchangeRatesController : ControllerBase
     /// </summary>
     /// <param name="from">Source currency (e.g., USD)</param>
     /// <param name="to">Target currency (e.g., EUR)</param>
+    /// <param name="ct">Cancellation token</param>
     [HttpGet("{from}/{to}")]
     [ProducesResponseType(typeof(ExchangeRateResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
