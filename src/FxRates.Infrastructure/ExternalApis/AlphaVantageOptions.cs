@@ -1,4 +1,7 @@
+using System.Text.Json;
 using FxRates.Application.ExternalApis;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace FxRates.Infrastructure.ExternalApis;
 
@@ -46,7 +49,7 @@ public class AlphaVantageClient : IForexApiClient
             var json = await response.Content.ReadAsStringAsync(ct);
             using var doc = JsonDocument.Parse(json);
 
-            // A AlphaVantage devolve os dados dentro desta chave específica
+            // AlphaVantage returns the data inside this specific key
             if (!doc.RootElement.TryGetProperty("Realtime Currency Exchange Rate", out var rateElement))
             {
                 _logger.LogWarning("AlphaVantage did not return data for {From}/{To}", fromCurrency, toCurrency);

@@ -16,7 +16,7 @@ public class ExchangeRate
     private ExchangeRate() { }
     
     /// <summary>
-    /// Only point of entitie creation.
+    /// Only point of entity creation.
     /// </summary>
     public static ExchangeRate Create(
         string fromCurrency,

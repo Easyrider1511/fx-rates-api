@@ -1,5 +1,6 @@
 using FxRates.Domain.Entities;
 using FxRates.Domain.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace FxRates.Infrastructure.Persistence;
 

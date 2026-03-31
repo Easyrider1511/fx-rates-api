@@ -418,3 +418,11 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# SQLite database files (runtime artefacts, not part of source control)
+*.db
+*.db-shm
+*.db-wal
+
+# .NET User Secrets (contains the AlphaVantage API key — never commit)
+**/secrets.json

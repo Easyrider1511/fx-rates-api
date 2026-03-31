@@ -1,3 +1,8 @@
+using FxRates.Application.ExternalApis;
+using FxRates.Domain.Entities;
+using FxRates.Domain.Repositories;
+using Microsoft.Extensions.Logging;
+
 namespace FxRates.Application.Services;
 
 public class ExchangeRateService : IExchangeRateService
